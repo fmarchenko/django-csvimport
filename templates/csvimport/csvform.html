@@ -1,0 +1,89 @@
+{% load staticfiles %}
+
+<script type="text/javascript" src="{% static 'js/dropzone.js' %}"></script>
+<script type="text/javascript" >
+var file_name = '';
+$(document).ready( function(){
+	
+	$('.csv-result').on('click', '.dumpdata', function(e){
+		$(".csvalerts").hide();
+		var required_fields = {{required_fields|safe}} ;
+		var values = []
+		var is_errors = false;
+		$.each( $('.csvheader').children(), function(i, th ){
+			var field_val = $(th).children().first().val();
+			values.push(field_val);
+
+		})
+		$.each(  required_fields, function(i, field){
+			if ( values.indexOf(field) == -1 ){
+				$(".csvalerts").append('!!!!!!!!!!!!!!!!!!!!');
+				is_errors = true;
+			}
+		});
+		if (is_errors){
+			$(".csvalerts").show();
+		}
+		else{
+			$.post("{% url 'csvdone' label %}",{file:file_name, data: values.join() }, function(data){
+				console.log(data);
+			})
+		}
+	});
+	
+	var csv_result = $('.csv-result');
+	csv_result.hide();
+	$(".csvalerts").hide();
+	var loadSuccess = function ( file, data ){
+		answer = $.parseJSON(data);
+		file_name = answer.file;
+		$.each(answer.headers, function(n , val){
+			var th = $( $('.csvheader').children().eq(val[0]) );
+			th.children().first().val( val[1] );
+		});
+		$.each(answer.rows, function(n , val){
+			var tr = $('<tr></tr>');
+			$.each(val, function(n1, col){
+				tr.append('<td>'+col + '</td>');
+			});	
+			$('.csvtable').append(tr);
+		});
+		csv_result.show();
+	};
+	Dropzone.options.myAwesomeDropzone = {
+		maxFilesize: 10,
+		maxFiles: 1,
+		acceptedFiles: 'text/csv',
+		init: function(){
+			this.on("complete", function(file) {
+				this.removeFile(file);
+			});
+			this.on("success", loadSuccess);
+		}
+	};
+
+})
+
+</script>
+<div id="dropzone">
+<form action="{% url 'csvimport' label %}" class="dropzone" id="my-awesome-dropzone" enctype="multipart/form-data">
+	<input type="file" name="file" />
+</form>
+</div>
+<div class="csv-result">
+<table class="csvtable">
+<tr class='csvheader'>
+{% for c in col_nums %}
+	<th>
+		<select>
+			<option>----</option>
+			{% for i in headers %}<option value="{{i.0}}">{{i.1.label}}</option>{% endfor %}
+		<select>
+	</th>
+{% endfor %}
+</tr>
+</table>
+<button class="dumpdata">Submit</button>
+<div class="csvalerts">
+</div>
+</div>
