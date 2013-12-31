@@ -1,5 +1,6 @@
-{% load staticfiles %}
+{% load staticfiles sekizai_tags %}
 
+{% addtoblock "js" %}
 <script type="text/javascript" src="{% static 'js/dropzone.js' %}"></script>
 <script type="text/javascript" >
 var file_name = '';
@@ -62,9 +63,9 @@ $(document).ready( function(){
 		}
 	};
 
-})
-
+});
 </script>
+{% endaddtoblock %}
 <div id="dropzone">
 <form action="{% url 'csvimport' label %}" class="dropzone" id="my-awesome-dropzone" enctype="multipart/form-data">
 	<input type="file" name="file" />
@@ -73,13 +74,15 @@ $(document).ready( function(){
 <div class="csv-result">
 <table class="csvtable">
 <tr class='csvheader'>
-{% for c in col_nums %}
+{% for c in headers %}
+{% if not c.is_hidden %}
 	<th>
 		<select>
 			<option>----</option>
 			{% for i in headers %}<option value="{{i.0}}">{{i.1.label}}</option>{% endfor %}
 		<select>
 	</th>
+{% endif %}
 {% endfor %}
 </tr>
 </table>
