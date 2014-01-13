@@ -46,6 +46,7 @@ def csvimport(request, label):
 
 @csrf_exempt
 def csvdump(request, label):
+#     return HttpResponse( json.dumps({'added': 11 }) )
     if not request.POST.has_key('file') or not request.POST.has_key('data') : 
         return HttpResponse( json.dumps({'critical': "Not file id" }) )
     file_id = request.POST['file']
@@ -66,20 +67,19 @@ def csvdump(request, label):
     with open(file_name, 'r') as stream:
         csv = unicodecsv.reader(stream, encoding='utf-8', delimiter=getattr(settings, 'CSV_DELIMITER', ';'))
         for n, row in enumerate( csv ):
-            if n == 0:continue
+            if n == 0: continue
             obj = {}
             for ind, i in enumerate(row):
                 try:  obj[ mapping[ind] ] = i
                 except KeyError: pass
             form_obj = form(obj)
-            print form_obj.is_valid()
-            print form_obj 
-            components.append(obj)
+            if form_obj.is_valid():
+                components.append(obj)
                     
                     
-    #mod_name, func_name = settings.CSV_DELEGATE.rsplit('.',1)
-    #mod = importlib.import_module(mod_name)
-    #func = getattr(mod, func_name)
-    #func( components )
-    return HttpResponse( '' )
+    mod_name, func_name = settings.CSV_DELEGATE[label].rsplit('.',1)
+    mod = importlib.import_module(mod_name)
+    func = getattr(mod, func_name)
+    added = func(components, request)
+    return HttpResponse( json.dumps({'added': added }) )
     
