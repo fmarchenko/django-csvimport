@@ -18,7 +18,7 @@ $(document).ready( function(){
 		})
 		$.each(  required_fields, function(i, field){
 			if ( values.indexOf(field) == -1 ){
-				$(".csvalerts").append('!!!!!!!!!!!!!!!!!!!!');
+				$(".csvalerts").append('<p>Значение поля: '+field+'. Не найденно.</p>');
 				is_errors = true;
 			}
 		});
