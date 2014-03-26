@@ -33,14 +33,17 @@ def csvimport(request, label):
     stream.close()
     answ = { 'headers': [], 'rows': [], 'file': file_id }
     with open(file_name, 'r') as stream:
-        csv = unicodecsv.reader(stream, encoding='utf-8', delimiter=getattr(settings, 'CSV_DELIMITER', ';'))
-        for n, row in enumerate( csv ):
-            if n > 4: break
-            if n == 0: 
-                for col, item in enumerate( row ):
-                    if item.upper() in headers:
-                        answ['headers'].append( (col, item.lower()) )
-            else: answ['rows'].append(row)
+        try:
+            csv = unicodecsv.reader(stream, encoding='utf-8', delimiter=getattr(settings, 'CSV_DELIMITER', ';'))
+            for n, row in enumerate( csv ):
+                if n > 4: break
+                if n == 0: 
+                    for col, item in enumerate( row ):
+                        if item.upper() in headers:
+                            answ['headers'].append( (col, item.lower()) )
+                else: answ['rows'].append(row)
+        except Exception as ex:
+            return HttpResponse( json.dumps( {'error': {'desc': str(ex)}} ), status=500 )
     return HttpResponse( json.dumps( answ ) )
 
 
