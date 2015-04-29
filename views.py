@@ -12,7 +12,7 @@ from itertools import chain
 def csvimport(request, label):
     if not request.method == 'POST': 
         raise Http404
-    mod_name, form_name = settings.CSV_FORMS[label].rsplit('.',1)
+    mod_name, form_name = settings.CSV_FORMS[label].rsplit('.', 1)
     mod = importlib.import_module(mod_name)
     form = getattr(mod, form_name)()
     headers = map(
@@ -22,7 +22,7 @@ def csvimport(request, label):
             [unicode(f.label) for f in form.fields.values() if not f.widget.is_hidden]
         )
     )
-    path_dir = os.path.join( settings.MEDIA_ROOT, 'csvimport')
+    path_dir = os.path.join(settings.MEDIA_ROOT, 'csvimport')
     if not os.path.exists(path_dir):
         os.mkdir(path_dir)
     file_id = str(uuid.uuid4())
@@ -31,20 +31,20 @@ def csvimport(request, label):
     for chunk in request.FILES['file'].chunks():
         stream.write(chunk)
     stream.close()
-    answ = { 'headers': [], 'rows': [], 'file': file_id }
+    answ = {'headers': [], 'rows': [], 'file': file_id}
     with open(file_name, 'r') as stream:
         try:
             csv = unicodecsv.reader(stream, encoding='utf-8', delimiter=getattr(settings, 'CSV_DELIMITER', ';'))
-            for n, row in enumerate( csv ):
+            for n, row in enumerate(csv):
                 if n > 4: break
                 if n == 0: 
-                    for col, item in enumerate( row ):
+                    for col, item in enumerate(row):
                         if item.upper() in headers:
-                            answ['headers'].append( (col, item.lower()) )
+                            answ['headers'].append((col, item.lower()))
                 else: answ['rows'].append(row)
         except Exception as ex:
-            return HttpResponse( json.dumps( {'error': {'desc': str(ex)}} ), status=500 )
-    return HttpResponse( json.dumps( answ ) )
+            return HttpResponse(json.dumps({'error': {'desc': str(ex)}}), status=500)
+    return HttpResponse(json.dumps(answ))
 
 
 @csrf_exempt
@@ -69,20 +69,19 @@ def csvdump(request, label):
     components = []
     with open(file_name, 'r') as stream:
         csv = unicodecsv.reader(stream, encoding='utf-8', delimiter=getattr(settings, 'CSV_DELIMITER', ';'))
-        for n, row in enumerate( csv ):
+        for n, row in enumerate(csv):
             if n == 0: continue
             obj = {}
             for ind, i in enumerate(row):
-                try:  obj[ mapping[ind] ] = i
+                try: obj[mapping[ind]] = i
                 except KeyError: pass
             form_obj = form(obj)
             if form_obj.is_valid():
                 components.append(obj)
                     
                     
-    mod_name, func_name = settings.CSV_DELEGATE[label].rsplit('.',1)
+    mod_name, func_name = settings.CSV_DELEGATE[label].rsplit('.', 1)
     mod = importlib.import_module(mod_name)
     func = getattr(mod, func_name)
     added = func(components, request)
-    return HttpResponse( json.dumps({'added': added }) )
-    
+    return HttpResponse(json.dumps({'added': added}))

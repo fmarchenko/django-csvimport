@@ -7,7 +7,7 @@ register = template.Library()
 
 @register.inclusion_tag('csvimport/csvform.html', takes_context=True)
 def csvform(context, label):
-    mod_name, form_name = settings.CSV_FORMS[label].rsplit('.',1)
+    mod_name, form_name = settings.CSV_FORMS[label].rsplit('.', 1)
     mod = importlib.import_module(mod_name)
     form = getattr(mod, form_name)
     required_fields = []

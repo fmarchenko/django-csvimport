@@ -6,7 +6,7 @@
 var file_name = '';
 $(document).ready( function(){
 	
-	$('.csv-result').on('click', '.dumpdata', function(e){
+	$('.csv-result').bind('click', '.dumpdata', function(e){
 		$(".csvalerts").hide();
 		var required_fields = {{required_fields|safe}} ;
 		var values = []
@@ -27,7 +27,9 @@ $(document).ready( function(){
 		}
 		else{
 			$.post("{% url 'csvdone' label %}",{file:file_name, data: values.join() }, function(data){
+                var event = new CustomEvent('{{ label }}_load', {'detail': data});
 				console.log(data);
+                window.dispatchEvent(event);
 			})
 		}
 	});
