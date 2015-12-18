@@ -34,7 +34,8 @@ def csvimport(request, label):
     answ = {'headers': [], 'rows': [], 'file': file_id}
     with open(file_name, 'r') as stream:
         try:
-            csv = unicodecsv.reader(stream, encoding='utf-8', delimiter=getattr(settings, 'CSV_DELIMITER', ';'))
+            delimiter = str(request.POST.get('delimiter') or getattr(settings, 'CSV_DELIMITER', ';'))
+            csv = unicodecsv.reader(stream, encoding='utf-8', delimiter=delimiter)
             for n, row in enumerate(csv):
                 if n > 4: break
                 if n == 0: 
@@ -68,7 +69,8 @@ def csvdump(request, label):
     
     components = []
     with open(file_name, 'r') as stream:
-        csv = unicodecsv.reader(stream, encoding='utf-8', delimiter=getattr(settings, 'CSV_DELIMITER', ';'))
+        delimiter = str(request.POST.get('delimiter') or getattr(settings, 'CSV_DELIMITER', ';'))
+        csv = unicodecsv.reader(stream, encoding='utf-8', delimiter=delimiter)
         for n, row in enumerate(csv):
             if n == 0: continue
             obj = {}
